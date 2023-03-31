@@ -189,8 +189,8 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
             //
             for (size_t i = 0; i < numSamples; ++i)
             {
-                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableTriangle.size();
-                tempData[i] = tempData[i] * myWaveTable.tableTriangle[waveTableIndex];//do AM
+                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
+                tempData[i] = tempData[i] * myWaveTable.tableSaw[waveTableIndex];//do AM
             }
             //
 
@@ -201,8 +201,8 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
             /*
             for (size_t i = 0; i < numSamples; ++i)
             {
-                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableAlchemyPeak.size();
-                outData[i] = data[i] * myWaveTable.tableAlchemyPeak[waveTableIndex];//do AM
+                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableHyperFamilyCHRDAlvaJay.size();
+                outData[i] = data[i] * myWaveTable.tableHyperFamilyCHRDAlvaJay[waveTableIndex];//do AM
             }
             */
 
