@@ -5,6 +5,12 @@
               jucerFormatVersion="1" companyName="Koitsumi">
   <MAINGROUP id="bt9f7Q" name="VSTEmotionRenderer">
     <GROUP id="{F35DFCD8-9F39-5BCF-72E0-12EF7977174F}" name="Source">
+      <GROUP id="{573557D8-9495-2A63-0195-742B93FE43E3}" name="STFT">
+        <FILE id="S5N03B" name="HannWindow.h" compile="0" resource="0" file="Source/STFT/HannWindow.h"/>
+        <FILE id="FriDc1" name="Ooura_FFT.h" compile="0" resource="0" file="Source/STFT/Ooura_FFT.h"/>
+        <FILE id="KeFzA2" name="PostProcessor.h" compile="0" resource="0" file="Source/STFT/PostProcessor.h"/>
+        <FILE id="EYIgUQ" name="STFT.h" compile="0" resource="0" file="Source/STFT/STFT.h"/>
+      </GROUP>
       <FILE id="MzRTF8" name="WaveTable.h" compile="0" resource="0" file="Source/WaveTable.h"/>
       <FILE id="HJUw4m" name="EmotionDSP.h" compile="0" resource="0" file="Source/EmotionDSP.h"/>
       <FILE id="kIIQ5x" name="PluginProcessor.cpp" compile="1" resource="0"

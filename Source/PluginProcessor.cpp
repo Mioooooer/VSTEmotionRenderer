@@ -103,6 +103,7 @@ void VSTEmotionRendererAudioProcessor::prepareToPlay (double sampleRate, int sam
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     const auto numChannels = getNumInputChannels();
+    /*
     for (size_t ch = 0; ch < numChannels; ch++)
     {
         filterMatrix.emplace_back(FilterArray());
@@ -111,6 +112,8 @@ void VSTEmotionRendererAudioProcessor::prepareToPlay (double sampleRate, int sam
             filterMatrix[ch][i].setCoefficients(sampleRate, freqList[i], 5.0f);
         }
     }
+    */
+    currentSampleRate = sampleRate;
     tempBuffer.setSize(1, samplesPerBlock);
     tempBuffer.clear();
     filterBuffer.setSize(1, samplesPerBlock);
@@ -174,49 +177,41 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
     {
         auto *data = buffer.getWritePointer (channel);
         auto numSamples = buffer.getNumSamples();
-        // Pass to tone filter array.
-        
-        auto *outData = filterBuffer.getWritePointer(0);
-        
-        for (auto &&filter : filterMatrix[channel])
+        // create input vector for stft
+        std::vector<double> inputVector;
+        std::vector<double> carrierVector;
+        for (size_t i = 0; i < numSamples; ++i)
         {
-            auto *tempData = tempBuffer.getWritePointer(0);
-
-            filter.process(data, tempData, numSamples);
-
-            // AM modulation
-            //auto rms = filter.calculateRMS(tempData, numSamples);
-            //
-            for (size_t i = 0; i < numSamples; ++i)
-            {
-                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
-                tempData[i] = tempData[i] * myWaveTable.tableSaw[waveTableIndex];//do AM
-            }
-            //
-
-            for (size_t i = 0; i < numSamples; ++i)
-            {
-                outData[i] += tempData[i];
-            }
-            /*
-            for (size_t i = 0; i < numSamples; ++i)
-            {
-                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableHyperFamilyCHRDAlvaJay.size();
-                outData[i] = data[i] * myWaveTable.tableHyperFamilyCHRDAlvaJay[waveTableIndex];//do AM
-            }
-            */
-
-
-            tempBuffer.clear(0, 0, tempBuffer.getNumSamples());
+            waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
+            inputVector.emplace_back(data[i]);
+            carrierVector.emplace_back(myWaveTable.tableSaw[waveTableIndex]);
         }
-
+        //int n_fft = 2048;
+        //int hop_length = 512;
+        //int num_filters = 16;
+        std::vector<double> output_signal;
+        // output_signal would be equal to or larger than numSamples due to adding zero when applySTFT.
+        auto rms = myUtils.calculateRMS(data, numSamples);
+        if (rms > 0.0)
+        {
+            myUtils.applyVocoder(carrierVector, inputVector, output_signal);
+        }
+        else
+        {
+            for (size_t i = 0; i < numSamples; ++i)
+            {
+                output_signal.emplace_back(0.0);
+            }
+        }
+        
         for (size_t i = 0; i < numSamples; ++i)
         {
             auto mix = mixParameter->load();
-            data[i] = outData[i] * mix + data[i] * (1 - mix);
-            //data[i] = outData[i];
+            //data[i] = outData[i] * mix + data[i] * (1 - mix);
+            data[i] = output_signal[i] * mix + data[i] * (1 - mix);
+
         }
-        filterBuffer.clear(0, 0, filterBuffer.getNumSamples());
+        //filterBuffer.clear(0, 0, filterBuffer.getNumSamples());
     }
 
 

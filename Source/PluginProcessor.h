@@ -71,7 +71,10 @@ private:
     WaveTable::AllWaveTable myWaveTable;
     juce::AudioSampleBuffer filterBuffer;
     juce::AudioSampleBuffer tempBuffer;
-    using FilterArray = std::array<DSP::EmotionFilter, 48>;
+    DSP::MyUtils myUtils;
+    double currentSampleRate;
+    /*
+    using FilterArray = std::array<DSP::BandPassFilter, 48>;
     std::vector<FilterArray> filterMatrix;
     std::array<float, 48> freqList{
         185.00f,
@@ -123,6 +126,7 @@ private:
         2637.02f,
         2793.83f,
     };
+    */
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VSTEmotionRendererAudioProcessor)
 };
