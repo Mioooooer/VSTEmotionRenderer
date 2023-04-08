@@ -95,6 +95,23 @@ namespace DSP
             return std::sqrt(sum / numSamples);
         }
 
+        float calculateRMS(std::vector<double>& data, double numSamples)
+        {
+            if (numSamples <= 0)
+            {
+                return 0;
+            }
+
+            double sum = 0.0;
+            for (size_t i = 0; i < numSamples; i++)
+            {
+                auto sample = data[i];
+                sum += sample * sample;
+            }
+
+            return std::sqrt(sum / numSamples);
+        }
+
         void applySTFT(std::vector<double>& bufferin, std::vector<double>& bufferout)
         {
             double* tempIn = new double[shift];

@@ -118,6 +118,8 @@ void VSTEmotionRendererAudioProcessor::prepareToPlay (double sampleRate, int sam
     tempBuffer.clear();
     filterBuffer.setSize(1, samplesPerBlock);
     filterBuffer.clear();
+    toProcess.resize(numChannels);
+    toPass.resize(numChannels);
 }
 
 void VSTEmotionRendererAudioProcessor::releaseResources()
@@ -177,32 +179,89 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
     {
         auto *data = buffer.getWritePointer (channel);
         auto numSamples = buffer.getNumSamples();
+        int currentShiftNum = 1024;
+
         // create input vector for stft
         std::vector<double> inputVector;
         std::vector<double> carrierVector;
-        for (size_t i = 0; i < numSamples; ++i)
-        {
-            waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
-            inputVector.emplace_back(data[i]);
-            carrierVector.emplace_back(myWaveTable.tableSaw[waveTableIndex]);
-        }
-        //int n_fft = 2048;
-        //int hop_length = 512;
-        //int num_filters = 16;
-        std::vector<double> output_signal;
+
         // output_signal would be equal to or larger than numSamples due to adding zero when applySTFT.
-        auto rms = myUtils.calculateRMS(data, numSamples);
-        if (rms > 0.0)
+        std::vector<double> output_signal;
+        
+        //make compatible for any buffer size, by compare buffer size to shift num
+        if (numSamples >= currentShiftNum)
         {
-            myUtils.applyVocoder(carrierVector, inputVector, output_signal);
+            
+            for (size_t i = 0; i < numSamples; ++i)
+            {
+                waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
+                inputVector.emplace_back(data[i]);
+                carrierVector.emplace_back(myWaveTable.tableSaw[waveTableIndex]);
+            }
+            
+            auto rms = myUtils.calculateRMS(data, numSamples);
+            if (rms > 0.0)
+            {
+                myUtils.applyVocoder(carrierVector, inputVector, output_signal);
+            }
+            else
+            {
+                for (size_t i = 0; i < numSamples; ++i)
+                {
+                    output_signal.emplace_back(0.0);
+                }
+            }
         }
         else
         {
             for (size_t i = 0; i < numSamples; ++i)
             {
-                output_signal.emplace_back(0.0);
+                toProcess[channel].emplace_back(data[i]);
             }
+            
+            if (toProcess[channel].size() >= currentShiftNum)
+            {
+                for (size_t i = 0; i < currentShiftNum; ++i)
+                {
+                    waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
+                    inputVector.emplace_back(toProcess[channel][i]);
+                    carrierVector.emplace_back(myWaveTable.tableSaw[waveTableIndex]);
+                }
+                toProcess[channel].erase(toProcess[channel].begin(), toProcess[channel].begin()+currentShiftNum);
+                auto rms = myUtils.calculateRMS(inputVector, currentShiftNum);
+                if (rms > 0.0)
+                {
+                    myUtils.applyVocoder(carrierVector, inputVector, toPass[channel]);
+                }
+                else
+                {
+                    for (size_t i = 0; i < currentShiftNum; ++i)
+                    {
+                        toPass[channel].emplace_back(0.0);
+                    }
+                        
+                }
+            }
+
+            if (toPass[channel].size() > 0)
+            {
+                for (size_t i = 0; i < numSamples; ++i)
+                {
+                    output_signal.emplace_back(toPass[channel][i]);
+                }
+                toPass[channel].erase(toPass[channel].begin(), toPass[channel].begin()+numSamples);
+            }
+            else
+            {
+                for (size_t i = 0; i < numSamples; ++i)
+                {
+                    output_signal.emplace_back(0.0);
+                }
+            }
+            
         }
+
+        
         
         for (size_t i = 0; i < numSamples; ++i)
         {

@@ -72,6 +72,8 @@ private:
     juce::AudioSampleBuffer filterBuffer;
     juce::AudioSampleBuffer tempBuffer;
     DSP::MyUtils myUtils;
+    std::vector<std::vector<double> > toProcess;
+    std::vector<std::vector<double> > toPass;
     double currentSampleRate;
     /*
     using FilterArray = std::array<DSP::BandPassFilter, 48>;
