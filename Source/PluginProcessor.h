@@ -68,6 +68,7 @@ private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     std::atomic<float>* mixParameter = nullptr;
     int waveTableIndex = 0;
+    int currentTableIndex = 0;
     WaveTable::AllWaveTable myWaveTable;
     juce::AudioSampleBuffer filterBuffer;
     juce::AudioSampleBuffer tempBuffer;
