@@ -112,6 +112,12 @@ namespace DSP
             return std::sqrt(sum / numSamples);
         }
 
+        void complexMultiply(double a, double b, double c, double d, double& e, double& f)
+        {
+            e = a*c - b*d;
+            f = a*d + b*c;
+        }
+
         void applySTFT(std::vector<double>& bufferin, std::vector<double>& bufferout)
         {
             double* tempIn = new double[shift];
@@ -173,9 +179,10 @@ namespace DSP
             std::vector<double> multipliedSTFT;
             applySTFT(carrierIn, carrierSTFT);
             applySTFT(modulatorIn, modulatorSTFT);
-            for(int i = 0; i < carrierSTFT.size(); i++)
+            for(int i = 0; i < carrierSTFT.size(); i = i + 2)//complexMultiply
             {
-                multipliedSTFT.emplace_back(carrierSTFT[i] * modulatorSTFT[i]);
+                multipliedSTFT.emplace_back(carrierSTFT[i] * modulatorSTFT[i] - carrierSTFT[i+1] * modulatorSTFT[i+1]);
+                multipliedSTFT.emplace_back(carrierSTFT[i] * modulatorSTFT[i+1] + carrierSTFT[i+1] * modulatorSTFT[i]);
             }
             applyISTFT(multipliedSTFT, vocoderOut);
         }

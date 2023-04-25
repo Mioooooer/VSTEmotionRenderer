@@ -198,7 +198,7 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
             {
                 waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
                 inputVector.emplace_back(data[i]);
-                carrierVector.emplace_back(0.8 * myWaveTable.tableSaw[waveTableIndex]);
+                carrierVector.emplace_back(myWaveTable.tableSaw[waveTableIndex]);
             }
             
             auto rms = myUtils.calculateRMS(data, numSamples);
@@ -227,7 +227,7 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
                 {
                     waveTableIndex = (waveTableIndex+1) % myWaveTable.tableSaw.size();
                     inputVector.emplace_back(toProcess[channel][i]);
-                    carrierVector.emplace_back(0.8 * myWaveTable.tableSaw[waveTableIndex]);
+                    carrierVector.emplace_back(myWaveTable.tableSaw[waveTableIndex]);
                 }
                 toProcess[channel].erase(toProcess[channel].begin(), toProcess[channel].begin()+currentShiftNum);
                 auto rms = myUtils.calculateRMS(inputVector, currentShiftNum);
@@ -269,7 +269,7 @@ void VSTEmotionRendererAudioProcessor::processBlock (juce::AudioBuffer<float>& b
         {
             auto mix = mixParameter->load();
             //data[i] = outData[i] * mix + data[i] * (1 - mix);
-            data[i] = 0.8 * output_signal[i] * mix + data[i] * (1 - mix);
+            data[i] = output_signal[i] * mix + data[i] * (1 - mix);
 
         }
         //filterBuffer.clear(0, 0, filterBuffer.getNumSamples());
