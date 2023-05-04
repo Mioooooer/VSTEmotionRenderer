@@ -172,17 +172,26 @@ namespace DSP
 
         }
 
+        void getMagnitude(std::vector<double>& bufferin, std::vector<double>& bufferout)
+        {
+            for(int i = 0; i < bufferin.size(); i = i + 2)
+            {
+                bufferout.emplace_back(std::sqrt(bufferin[i]*bufferin[i] + bufferin[i+1]*bufferin[i+1]));
+            }
+        }
+
         void applyVocoder(std::vector<double>& carrierIn, std::vector<double>& modulatorIn, std::vector<double>& vocoderOut)
         {
             std::vector<double> carrierSTFT;
             std::vector<double> modulatorSTFT;
+            std::vector<double> modulatorMagnitude;
             std::vector<double> multipliedSTFT;
             applySTFT(carrierIn, carrierSTFT);
             applySTFT(modulatorIn, modulatorSTFT);
-            for(int i = 0; i < carrierSTFT.size(); i = i + 2)//complexMultiply
+            getMagnitude(modulatorSTFT, modulatorMagnitude);
+            for(int i = 0; i < carrierSTFT.size(); i++)//carrierSTFT multiplied by modulatorMagnitude
             {
-                multipliedSTFT.emplace_back(carrierSTFT[i] * modulatorSTFT[i] - carrierSTFT[i+1] * modulatorSTFT[i+1]);
-                multipliedSTFT.emplace_back(carrierSTFT[i] * modulatorSTFT[i+1] + carrierSTFT[i+1] * modulatorSTFT[i]);
+                multipliedSTFT.emplace_back(carrierSTFT[i] * modulatorMagnitude[i/2]);
             }
             applyISTFT(multipliedSTFT, vocoderOut);
         }
